@@ -20,7 +20,7 @@ The English word appears large and is spoken once.
 
 Practice shows the German word. You type the English one. Spots keeps the words from that moment until you write them correctly.
 
-Glasses puts the same word in a lens. Swipe is a sentence from the freeze. Web flips a few words on a page into English. All three use the same rehearsed words, so the pitch can show those paths.
+Glasses puts the same word in a lens. You still say it.
 
 The home screen plays two short clips. In each clip, someone answers a question, loses a word, and uses Conversation Copilot.
 
@@ -39,6 +39,6 @@ Open the local address the command prints.
 - Live is the microphone. Next word offers cozy from the café line.
 - Practice asks you to type the English word.
 - Spots lists what is still open.
-- Glasses, Swipe, and Web show the same three words in those places.
+- Glasses shows the same word in a lens.
 
 There is no account, no backend, and no API key. The browser listens. The three spoken English words are audio files in `public/whisper`.

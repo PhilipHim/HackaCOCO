@@ -9,14 +9,7 @@ type Phrase = {
   line: string
 }
 
-type View =
-  | 'home'
-  | 'live'
-  | 'practice'
-  | 'spots'
-  | 'glasses'
-  | 'swipe'
-  | 'web'
+type View = 'home' | 'live' | 'practice' | 'spots' | 'glasses'
 
 const PHRASES: Phrase[] = [
   {
@@ -47,8 +40,6 @@ const TABS: { id: Exclude<View, 'home'>; label: string }[] = [
   { id: 'practice', label: 'Practice' },
   { id: 'spots', label: 'Spots' },
   { id: 'glasses', label: 'Glasses' },
-  { id: 'swipe', label: 'Swipe' },
-  { id: 'web', label: 'Web' },
 ]
 
 function fold(value: string) {
@@ -278,10 +269,6 @@ export default function App() {
       {view === 'glasses' ? (
         <Glasses onPlay={(item) => play(item.audio)} />
       ) : null}
-
-      {view === 'swipe' ? <Swipe onPlay={(item) => play(item.audio)} /> : null}
-
-      {view === 'web' ? <Web onPlay={(item) => play(item.audio)} /> : null}
     </div>
   )
 }
@@ -295,6 +282,15 @@ function Home({ onOpen }: { onOpen: (view: View) => void }) {
         You know the word. Under pressure it&apos;s gone. The English word
         comes back, and you say it yourself.
       </p>
+      <p className="known">On Live, hold and say one of these.</p>
+      <ul className="pairs">
+        {PHRASES.map((item) => (
+          <li key={item.en}>
+            <span>{item.de}</span>
+            <strong>{item.en}</strong>
+          </li>
+        ))}
+      </ul>
       <div className="clips">
         <video
           src="/clips/outside.mp4"
@@ -320,19 +316,13 @@ function Home({ onOpen }: { onOpen: (view: View) => void }) {
           <strong>Practice</strong>
           <span>The German word stays. You write the English one.</span>
         </button>
-      </div>
-      <div className="more-row">
         <button type="button" onClick={() => onOpen('spots')}>
-          Spots
+          <strong>Spots</strong>
+          <span>Words from that moment, until you can write them.</span>
         </button>
         <button type="button" onClick={() => onOpen('glasses')}>
-          Glasses
-        </button>
-        <button type="button" onClick={() => onOpen('swipe')}>
-          Swipe
-        </button>
-        <button type="button" onClick={() => onOpen('web')}>
-          Web
+          <strong>Glasses</strong>
+          <span>The same word, in the lens. You still say it.</span>
         </button>
       </div>
     </main>
@@ -592,98 +582,6 @@ function Glasses({ onPlay }: { onPlay: (item: Phrase) => void }) {
             <span>{item.line}</span>
           </button>
         ))}
-      </div>
-    </main>
-  )
-}
-
-function Swipe({ onPlay }: { onPlay: (item: Phrase) => void }) {
-  const [index, setIndex] = useState(0)
-  const [shown, setShown] = useState(false)
-  const item = PHRASES[index]
-
-  function next() {
-    setShown(false)
-    setIndex((current) => (current + 1) % PHRASES.length)
-  }
-
-  return (
-    <main className="screen">
-      <h1>Swipe.</h1>
-      <p className="screen-lede">
-        A sentence from a real freeze. The English word is one tap away.
-      </p>
-      <article className="swipe-card">
-        <p className="swipe-count">
-          {index + 1} / {PHRASES.length}
-        </p>
-        <p className="swipe-line">{item.line}</p>
-        {shown ? <p className="word swipe-word">{item.en}</p> : <p className="swipe-word" />}
-        <div className="quiz-actions">
-          <button
-            type="button"
-            className="solid"
-            onClick={() => {
-              setShown(true)
-              onPlay(item)
-            }}
-          >
-            The English word
-          </button>
-          <button type="button" className="ghost" onClick={next}>
-            Next
-          </button>
-        </div>
-      </article>
-    </main>
-  )
-}
-
-function Web({ onPlay }: { onPlay: (item: Phrase) => void }) {
-  const [flipped, setFlipped] = useState<string[]>([])
-
-  return (
-    <main className="screen">
-      <h1>On the page.</h1>
-      <p className="screen-lede">
-        While you read, a few words flip into the language you are learning.
-        Tap one.
-      </p>
-      <div className="browser">
-        <div className="browser-bar">cafe-note.example</div>
-        <p className="article">
-          We sat by the window.{' '}
-          {PHRASES.map((item, index) => {
-            const lead =
-              index === 0
-                ? 'The room was '
-                : index === 1
-                  ? 'After an hour I was '
-                  : 'I had to '
-            const tail = index === 2 ? ' and ask for water.' : '. '
-            return (
-              <span key={item.en}>
-                {lead}
-                <button
-                  type="button"
-                  className="flip"
-                  data-on={flipped.includes(item.en)}
-                  onClick={() => {
-                    setFlipped((current) =>
-                      current.includes(item.en)
-                        ? current
-                        : [...current, item.en],
-                    )
-                    onPlay(item)
-                  }}
-                >
-                  {flipped.includes(item.en) ? item.en : item.de}
-                </button>
-                {tail}
-              </span>
-            )
-          })}
-        </p>
       </div>
     </main>
   )
