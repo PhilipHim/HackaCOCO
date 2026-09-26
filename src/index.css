@@ -70,6 +70,8 @@ button {
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 6px;
 }
 
@@ -305,36 +307,197 @@ button {
   }
 }
 
-.practice {
-  width: min(720px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 36px 0 64px;
+.more-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 18px;
 }
 
-.practice h1 {
-  margin: 0;
+.more-row button,
+.text-btn {
+  border: 0;
+  background: transparent;
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.screen {
+  width: min(720px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 28px 0 72px;
+}
+
+.screen h1,
+.swipe-line {
   font-family: var(--display);
-  font-size: clamp(40px, 6vw, 64px);
   font-weight: 400;
   letter-spacing: -0.03em;
 }
 
-.empty {
-  margin: 16px 0 0;
-  color: var(--muted);
-  font-size: 18px;
+.screen h1 {
+  margin: 0;
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 0.95;
 }
 
-.practice ul {
+.screen-lede {
+  margin: 14px 0 0;
+  max-width: 34rem;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.quiz,
+.swipe-card,
+.browser {
+  margin-top: 28px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+
+.quiz,
+.swipe-card {
+  padding: 28px 28px 24px;
+}
+
+.progress,
+.swipe-count {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quiz-word {
+  margin: 12px 0 0;
+  font-family: var(--display);
+  font-size: clamp(52px, 8vw, 84px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.quiz-label {
+  display: block;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quiz input {
+  width: 100%;
+  margin-top: 8px;
+  border: 0;
+  border-bottom: 2px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--nunito);
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  padding: 8px 0 10px;
+  outline: none;
+}
+
+.quiz input:focus,
+.quiz input[data-state='ok'] {
+  border-bottom-color: var(--blue);
+}
+
+.quiz input[data-state='bad'] {
+  border-bottom-color: #f3287a;
+}
+
+.quiz-note,
+.quiz-reveal {
+  margin: 12px 0 0;
+  font-size: 16px;
+}
+
+.quiz-reveal,
+.swipe-word {
+  font-family: var(--nunito);
+  font-weight: 800;
+  color: var(--blue);
+}
+
+.quiz-reveal {
+  font-size: 28px;
+}
+
+.quiz-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 22px;
+}
+
+.solid,
+.ghost {
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.solid {
+  border: 0;
+  background: var(--blue);
+  color: white;
+}
+
+.solid:hover,
+.chip:hover {
+  background: var(--blue-press);
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.retry {
+  margin-top: 28px;
+}
+
+.counts {
+  display: flex;
+  gap: 22px;
+  margin: 22px 0 0;
+  color: var(--muted);
+}
+
+.counts strong {
+  margin-right: 6px;
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--blue);
+}
+
+.word-list {
   list-style: none;
-  margin: 28px 0 0;
+  margin: 18px 0 22px;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.practice li {
+.word-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -345,35 +508,159 @@ button {
   padding: 16px 18px;
 }
 
-.practice li div {
+.word-list li div {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.practice strong {
+.word-list strong {
   font-family: var(--nunito);
   font-size: 28px;
   letter-spacing: -0.03em;
+}
+
+.word-list span,
+.word-list em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 15px;
+}
+
+.word-list li[data-clear='true'] strong {
   color: var(--blue);
 }
 
-.practice li span {
+.frames {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.lens {
+  width: min(210px, 38vw);
+  height: 132px;
+  border: 3px solid var(--ink);
+  border-radius: 46% 46% 42% 42%;
+  background: var(--card);
+  display: grid;
+  place-items: center;
+}
+
+.lens span {
+  font-family: var(--nunito);
+  font-weight: 800;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.04em;
+  color: var(--blue);
+}
+
+.bridge {
+  width: 36px;
+  height: 10px;
+  margin-top: 18px;
+  border-top: 3px solid var(--ink);
+  border-radius: 999px;
+}
+
+.moments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.moments button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 18px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.moments button[data-active='true'] {
+  border-color: var(--blue);
+}
+
+.moments strong {
+  font-size: 18px;
+}
+
+.moments span {
   color: var(--muted);
 }
 
-.practice li button {
+.swipe-line {
+  margin: 18px 0 0;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.05;
+}
+
+.swipe-word {
+  min-height: 72px;
+  margin: 18px 0 0;
+  font-size: clamp(48px, 8vw, 72px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.browser-bar {
+  padding: 12px 16px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.article {
+  margin: 0;
+  padding: 28px 24px 32px;
+  font-size: 22px;
+  line-height: 1.55;
+}
+
+.flip {
+  border: 0;
+  border-bottom: 2px solid var(--blue);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  padding: 0 1px 1px;
+  cursor: pointer;
+}
+
+.flip[data-on='true'] {
+  color: var(--blue);
+}
+
+.suggest {
+  text-align: center;
+}
+
+.suggest p {
+  margin: 0 0 10px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 32px;
+}
+
+.chip {
   border: 0;
   background: var(--blue);
   color: white;
   border-radius: 999px;
-  padding: 10px 16px;
-  font-weight: 700;
+  padding: 10px 18px;
+  font-family: var(--nunito);
+  font-weight: 800;
+  font-size: 22px;
   cursor: pointer;
-}
-
-.practice li button:hover {
-  background: var(--blue-press);
 }
 
 @media (max-width: 640px) {
@@ -386,7 +673,11 @@ button {
   }
 
   .home,
-  .practice {
+  .screen {
     width: min(720px, calc(100% - 32px));
+  }
+
+  .tabs {
+    max-width: 100%;
   }
 }
