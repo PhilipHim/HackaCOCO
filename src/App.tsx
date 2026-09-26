@@ -8,6 +8,8 @@ type Phrase = {
   audio: string
 }
 
+type View = 'home' | 'live' | 'practice'
+
 const PHRASES: Phrase[] = [
   {
     de: 'gemütlich',
@@ -29,8 +31,6 @@ const PHRASES: Phrase[] = [
   },
 ]
 
-type Phase = 'idle' | 'holding' | 'hit' | 'miss' | 'empty' | 'nomike'
-
 function fold(value: string) {
   return value
     .toLowerCase()
@@ -43,9 +43,8 @@ function matchPhrase(transcript: string) {
   const heard = fold(transcript)
   if (!heard.trim()) return null
   return (
-    PHRASES.find((phrase) =>
-      phrase.keys.some((key) => heard.includes(key)),
-    ) ?? null
+    PHRASES.find((phrase) => phrase.keys.some((key) => heard.includes(key))) ??
+    null
   )
 }
 
@@ -55,14 +54,16 @@ function getRecognitionCtor(): RecognitionCtor | null {
 }
 
 export default function App() {
-  const [phase, setPhase] = useState<Phase>('idle')
-  const [phrase, setPhrase] = useState<Phrase | null>(null)
-  const [heard, setHeard] = useState('')
-  const [practice, setPractice] = useState<string[]>([])
+  const [view, setView] = useState<View>('home')
+  const [holding, setHolding] = useState(false)
+  const [latest, setLatest] = useState<Phrase | null>(null)
+  const [saved, setSaved] = useState<Phrase[]>([])
   const holdingRef = useRef(false)
   const heardRef = useRef('')
   const recRef = useRef<BrowserRecognition | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const viewRef = useRef<View>('home')
+  viewRef.current = view
 
   function play(src: string) {
     audioRef.current?.pause()
@@ -72,30 +73,18 @@ export default function App() {
     void audio.play().catch(() => {})
   }
 
-  function reveal(next: Phrase) {
-    setPhrase(next)
-    setPhase('hit')
-    setPractice((current) =>
-      current.includes(next.en) ? current : [next.en, ...current],
+  function keep(next: Phrase) {
+    setLatest(next)
+    setSaved((current) =>
+      current.some((item) => item.en === next.en) ? current : [next, ...current],
     )
     play(next.audio)
   }
 
   function finish(transcript: string) {
-    const cleaned = transcript.trim()
-    setHeard(cleaned)
-    if (!cleaned) {
-      setPhrase(null)
-      setPhase('empty')
-      return
-    }
-    const found = matchPhrase(cleaned)
-    if (!found) {
-      setPhrase(null)
-      setPhase('miss')
-      return
-    }
-    reveal(found)
+    const found = matchPhrase(transcript)
+    if (found) keep(found)
+    setHolding(false)
   }
 
   function ensureRecognition() {
@@ -132,15 +121,15 @@ export default function App() {
   }
 
   function startHold() {
-    if (holdingRef.current) return
+    if (viewRef.current !== 'live' || holdingRef.current) return
     holdingRef.current = true
     heardRef.current = ''
-    setHeard('')
-    setPhase('holding')
+    setHolding(true)
+    setLatest(null)
     const rec = ensureRecognition()
     if (!rec) {
       holdingRef.current = false
-      setPhase('nomike')
+      setHolding(false)
       return
     }
     try {
@@ -154,7 +143,10 @@ export default function App() {
     if (!holdingRef.current) return
     holdingRef.current = false
     const rec = recRef.current
-    if (!rec) return
+    if (!rec) {
+      setHolding(false)
+      return
+    }
     try {
       rec.stop()
     } catch {
@@ -165,6 +157,7 @@ export default function App() {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.code !== 'Space' || event.repeat) return
+      if (viewRef.current !== 'live') return
       event.preventDefault()
       startHold()
     }
@@ -181,103 +174,198 @@ export default function App() {
     }
   }, [])
 
-  const sentence =
-    phase === 'hit' && phrase ? (
-      <>
-        It&apos;s really <em>{phrase.en}</em>.
-      </>
-    ) : (
-      <>
-        It&apos;s really <em>…</em>
-      </>
-    )
-
   return (
-    <div className="app">
-      <header className="top">
-        <CocoMark className="mark" />
-        <div>
-          <div className="wordmark">Conversation Copilot</div>
-          <div className="strokes" aria-hidden>
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      </header>
-
-      <main className="stage">
-        <section className="card" aria-live="polite">
-          <p className="kicker">
-            {phase === 'holding' ? 'Say it in German' : 'You are speaking'}
-          </p>
-          <h1 className="line">{sentence}</h1>
-          {phase === 'hit' && phrase ? (
-            <p className="word">{phrase.en}</p>
-          ) : null}
-          {phase === 'holding' ? (
-            <p className="note">Hold, say the word, then let go.</p>
-          ) : null}
-          {phase === 'miss' ? (
-            <p className="note">
-              {heard ? `Heard “${heard}”. ` : ''}
-              This demo only knows the pitch phrases.
-            </p>
-          ) : null}
-          {phase === 'empty' ? (
-            <p className="note">
-              Hold a bit longer and say the German word.
-            </p>
-          ) : null}
-          {phase === 'nomike' ? (
-            <p className="note">
-              This browser has no speech recognition. Tap a pitch phrase.
-            </p>
-          ) : null}
-          {practice.length > 0 ? (
-            <div className="practice">
-              <p>To practice</p>
-              {practice.map((word) => (
-                <span className="chip" key={word}>
-                  {word}
-                </span>
-              ))}
-            </div>
-          ) : null}
-        </section>
-
-        <div className="hold-row">
-          <p className="hold-copy">
-            Hold and say gemütlich, erschöpft, or unterbrechen.
-            Space does the same.
-          </p>
+    <div className="shell">
+      <header className="nav">
+        <button type="button" className="brand" onClick={() => setView('home')}>
+          <CocoMark className="mark" />
+          <span>Conversation Copilot</span>
+        </button>
+        <nav className="tabs" aria-label="Sections">
           <button
             type="button"
-            className="hold"
-            data-holding={phase === 'holding'}
+            data-active={view === 'live'}
+            onClick={() => setView('live')}
+          >
+            Live
+          </button>
+          <button
+            type="button"
+            data-active={view === 'practice'}
+            onClick={() => setView('practice')}
+          >
+            Practice
+          </button>
+        </nav>
+      </header>
+
+      {view === 'home' ? (
+        <Home
+          onLive={() => setView('live')}
+          onPractice={() => setView('practice')}
+        />
+      ) : null}
+
+      {view === 'live' ? (
+        <Live
+          holding={holding}
+          latest={latest}
+          onHoldStart={startHold}
+          onHoldEnd={endHold}
+        />
+      ) : null}
+
+      {view === 'practice' ? (
+        <Practice saved={saved} onHear={(item) => play(item.audio)} />
+      ) : null}
+    </div>
+  )
+}
+
+function Home({
+  onLive,
+  onPractice,
+}: {
+  onLive: () => void
+  onPractice: () => void
+}) {
+  return (
+    <main className="home">
+      <CocoMark className="home-mark" />
+      <h1>Conversation Copilot</h1>
+      <p className="lede">
+        You know the word. Under pressure it&apos;s gone. The English word
+        comes back, and you say it yourself.
+      </p>
+      <div className="clips">
+        <figure>
+          <video
+            src="/clips/outside.mp4"
+            poster="/clips/outside.jpg"
+            controls
+            playsInline
+            preload="metadata"
+          />
+          <figcaption>What everyone sees. She keeps the sentence.</figcaption>
+        </figure>
+        <figure>
+          <video
+            src="/clips/ear.mp4"
+            poster="/clips/ear.jpg"
+            controls
+            playsInline
+            preload="metadata"
+          />
+          <figcaption>From her side. This is when the word arrives.</figcaption>
+        </figure>
+      </div>
+      <div className="paths">
+        <button type="button" onClick={onLive}>
+          <strong>Live</strong>
+          <span>Hold the microphone when a word is missing.</span>
+        </button>
+        <button type="button" onClick={onPractice}>
+          <strong>Practice</strong>
+          <span>The words from that moment, so you can say them again.</span>
+        </button>
+      </div>
+    </main>
+  )
+}
+
+function Live({
+  holding,
+  latest,
+  onHoldStart,
+  onHoldEnd,
+}: {
+  holding: boolean
+  latest: Phrase | null
+  onHoldStart: () => void
+  onHoldEnd: () => void
+}) {
+  return (
+    <main className="live">
+      <section className="mic-card">
+        <div className="live-copy">
+          <h1>{holding ? 'Listening.' : 'When the word is gone.'}</h1>
+          <p>
+            {holding
+              ? 'Say it in German, then let go.'
+              : 'Hold the microphone and say the missing word in German.'}
+          </p>
+        </div>
+        {latest ? <p className="word">{latest.en}</p> : null}
+        <div className="mic-wrap">
+          {holding ? (
+            <div className="rec-pulse" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="mic"
+            data-holding={holding}
+            aria-label="Hold to say the missing word"
             onPointerDown={(event) => {
               event.preventDefault()
               event.currentTarget.setPointerCapture(event.pointerId)
-              startHold()
+              onHoldStart()
             }}
-            onPointerUp={endHold}
-            onPointerCancel={endHold}
+            onPointerUp={onHoldEnd}
+            onPointerCancel={onHoldEnd}
             onContextMenu={(event) => event.preventDefault()}
           >
-            {phase === 'holding' ? '…' : 'Hold'}
+            <MicIcon />
           </button>
         </div>
+        <p className="mic-label">{holding ? 'Release' : 'Hold'}</p>
+      </section>
+    </main>
+  )
+}
 
-        <div className="fallbacks">
-          <span>Or tap</span>
-          {PHRASES.map((item) => (
-            <button key={item.en} type="button" onClick={() => reveal(item)}>
-              {item.de}
-            </button>
+function Practice({
+  saved,
+  onHear,
+}: {
+  saved: Phrase[]
+  onHear: (item: Phrase) => void
+}) {
+  return (
+    <main className="practice">
+      <h1>Practice</h1>
+      {saved.length === 0 ? (
+        <p className="empty">Words from a conversation land here.</p>
+      ) : (
+        <ul>
+          {saved.map((item) => (
+            <li key={item.en}>
+              <div>
+                <strong>{item.en}</strong>
+                <span>{item.de}</span>
+              </div>
+              <button type="button" onClick={() => onHear(item)}>
+                Hear it
+              </button>
+            </li>
           ))}
-        </div>
-      </main>
-    </div>
+        </ul>
+      )}
+    </main>
+  )
+}
+
+function MicIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className="mic-icon">
+      <path
+        fill="currentColor"
+        d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"
+      />
+    </svg>
   )
 }
 
@@ -285,7 +373,6 @@ type RecognitionAlternative = { transcript: string }
 
 type RecognitionResult = {
   0?: RecognitionAlternative
-  isFinal?: boolean
 }
 
 type RecognitionResultEvent = {
