@@ -137,12 +137,6 @@ button {
   border-radius: 18px;
 }
 
-.clips figcaption {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 15px;
-}
-
 .paths {
   display: grid;
   gap: 12px;

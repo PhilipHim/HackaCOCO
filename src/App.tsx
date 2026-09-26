@@ -238,26 +238,20 @@ function Home({
         comes back, and you say it yourself.
       </p>
       <div className="clips">
-        <figure>
-          <video
-            src="/clips/outside.mp4"
-            poster="/clips/outside.jpg"
-            controls
-            playsInline
-            preload="metadata"
-          />
-          <figcaption>What everyone sees. She keeps the sentence.</figcaption>
-        </figure>
-        <figure>
-          <video
-            src="/clips/ear.mp4"
-            poster="/clips/ear.jpg"
-            controls
-            playsInline
-            preload="metadata"
-          />
-          <figcaption>From her side. This is when the word arrives.</figcaption>
-        </figure>
+        <video
+          src="/clips/outside.mp4"
+          poster="/clips/outside.jpg"
+          controls
+          playsInline
+          preload="metadata"
+        />
+        <video
+          src="/clips/ear.mp4"
+          poster="/clips/ear.jpg"
+          controls
+          playsInline
+          preload="metadata"
+        />
       </div>
       <div className="paths">
         <button type="button" onClick={onLive}>
